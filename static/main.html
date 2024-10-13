@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Список фильмов</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Список фильмов</h1>
+        <button id="load-movies" class="btn btn-primary mb-4">Load Movies</button>
+        <table class="table table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Название</th>
+                    <th>Ссылка</th>
+                    <th>Оригинальное название</th>
+                    <th>Год выпуска</th>
+                    <th>Возрастное ограничение</th>
+                    <th>Жанр</th>
+                    <th>Страна производства</th>
+                    <th>Рейтинг IMDb</th>
+                    <th>Рейтинг film.ru</th>
+                    <th>Оценка зрителей</th>
+                </tr>
+            </thead>
+            <tbody id="movies-table">
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function updateTable(movies) {
+            const tableBody = $('#movies-table');
+            tableBody.empty(); // Очистить таблицу перед добавлением новых данных
+            movies.forEach(movie => {
+                const row = `
+                    <tr>
+                        <td>${movie.title}</td>
+                        <td><a href="${movie.url}" target="_blank">${movie.url}</a></td>
+                        <td>${movie.original_name}</td>
+                        <td>${movie.release}</td>
+                        <td>${movie.age_limit}</td>
+                        <td>${movie.genre}</td>
+                        <td>${movie.country}</td>
+                        <td>${movie.rating_IMDb}</td>
+                        <td>${movie.rating_film_ru}</td>
+                        <td>${movie.rating_spectators}</td>
+                    </tr>`;
+                tableBody.append(row);
+            });
+        }
+
+        // Загрузка всех фильмов при нажатии на кнопку
+        $('#load-movies').on('click', function() {
+            $.ajax({
+                url: "/movies",
+                method: "GET",
+                success: function(movies) {
+                    updateTable(movies);
+                },
+                error: function(err) {
+                    console.error("Ошибка при загрузке фильмов:", err);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
