@@ -60,11 +60,11 @@ $('#load-movies').on('click', function() {
     });
 });
 
-// Функция сортировки
+// Сортировка
 $(document).ready(function() {
-    $('#bi-sort-up').click(function() {
-        var table = $(this).parents('table').eq(0);
-        var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index()));
+    $('th').click(function() {
+        const table = $(this).parents('table').eq(0);
+        let rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index()));
         if (!this.asc) {
             rows = rows.reverse();
         }
@@ -74,8 +74,8 @@ $(document).ready(function() {
 
 function comparer(index) {
     return function(a, b) {
-        var valA = getCellValue(a, index);
-        var valB = getCellValue(b, index);
+        const valA = getCellValue(a, index);
+        const valB = getCellValue(b, index);
         return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.localeCompare(valB);
     };
 }

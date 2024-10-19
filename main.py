@@ -10,6 +10,7 @@ from tqdm import tqdm
 from bs4 import BeautifulSoup
 from models import Base, Movie
 from database import engine, get_db
+from transliterate import translit
 
 app = FastAPI()
 
@@ -30,31 +31,33 @@ page_url = "/nojs?page="  # Адрес для пагинации
 pages = range(1, 1001)  # Страницы для парсинга, на одной странице хранится 30 фильмов
 
 
+# Функция для загрузки обложек
+def download_picture(url_picture, name_picture, picture_dir=picture_dir):
+    res = requests.get(url_picture, stream=True)
+    file_size = int(res.headers.get('content-length', 0))
+    ex = str(url_picture.split("/")[-1]).split(".")[-1]
+    translit_name = translit(name_picture, language_code='ru', reversed=True)
+    path_picture = os.path.join(picture_dir, f"{translit_name}.{ex}")
+    print(f"Path_picture: {path_picture}")
+
+    # Проверяем значение переменной окружения
+    use_progress = os.getenv('USE_PROGRESS_BAR', 'false').lower() == 'true'
+
+    # Определяем, будем ли мы использовать tqdm для отображения прогресса
+    progress = res.iter_content(1024)
+    if use_progress:
+        progress = tqdm(res.iter_content(1024), total=file_size, unit='B', unit_scale=True, unit_divisor=1024)
+
+    with open(path_picture, 'wb') as f:
+        for chunk in progress:
+            f.write(chunk)
+
+    picture_path = (path_picture.split("\\")[-2] + '/' + path_picture.split("\\")[-1])
+    return picture_path
+
+
 # Функция парсинга фильмов со страницы
 def parsing_movies(url: str, db: Session):
-    # Функция для загрузки обложек
-    def download_picture(url_picture, name_picture, picture_dir=picture_dir):
-
-        res = requests.get(url_picture, stream=True)
-        file_size = int(res.headers.get('content-length', 0))
-        ex = str(url_picture.split("/")[-1]).split(".")[-1]
-        path_picture = os.path.join(picture_dir, f"{name_picture}.{ex}")
-
-        # Проверяем значение переменной окружения
-        use_progress = os.getenv('USE_PROGRESS_BAR', 'false').lower() == 'true'
-
-        # Определяем, будем ли мы использовать tqdm для отображения прогресса
-        progress = response.iter_content(1024)
-        if use_progress:
-            progress = tqdm(res.iter_content(1024), total=file_size, unit='B', unit_scale=True, unit_divisor=1024)
-
-        with open(path_picture, 'wb') as f:
-            for chunk in progress:
-                f.write(chunk)
-
-        picture_path = (path_picture.split("\\")[-2] + '/' + path_picture.split("\\")[-1])
-        return picture_path
-
     def one_movie(movie_main):
 
         # Выделяем div с дополнительной информацией в отдельную переменную
@@ -77,6 +80,7 @@ def parsing_movies(url: str, db: Session):
         # Обложка
         picture_url = f'{base_url}{film.find("img")["src"]}'
         picture_name = download_picture(picture_url, name_picture=f'{title_save}_{release}')
+        print(f'picture_name: {picture_name}')
         # Возрастное ограничение
         try:
             age_limit = movie_main_subtitle.split(" / ")[2]
