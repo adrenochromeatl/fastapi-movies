@@ -5,23 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Список фильмов</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            margin: 0 auto;
+        }
+    </style>
 </head>
 <body>
     <div class="container mt-5">
         <h1 class="text-center">Список фильмов</h1>
-        <button id="load-movies" class="btn btn-primary mb-4">Load Movies</button>
+        <div id="loading-spinner" class="spinner-border text-primary" role="status" style="display: none;">
+            <span class="sr-only">Парсим фильмы...</span>
+        </div>
+        <button id="load-movies" class="btn btn-primary mb-4">Добавить фильмы</button>
         <table class="table table-bordered">
             <thead class="thead-dark">
                 <tr>
-                    <th>Название</th>
-                    <th>Ссылка</th>
+                    <th>ID<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sort-up" viewBox="0 0 16 16">
+                        <path d="M3.5 12.5a.5.5 0 0 1-1 0V3.707L1.354 4.854a.5.5 0 1 1-.708-.708l2-1.999.007-.007a.498.498 0 0 1 .7.006l2 2a.5.5 0 1 1-.707.708L3.5 3.707V12.5zm3.5-9a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zM7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1h-3zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1h-1z"/>
+                    </svg>
+                    </th>
+                    <th>Обложка</th>
+                    <th>Название<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sort-up" viewBox="0 0 16 16">
+                        <path d="M3.5 12.5a.5.5 0 0 1-1 0V3.707L1.354 4.854a.5.5 0 1 1-.708-.708l2-1.999.007-.007a.498.498 0 0 1 .7.006l2 2a.5.5 0 1 1-.707.708L3.5 3.707V12.5zm3.5-9a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zM7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1h-3zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1h-1z"/>
+                    </svg>
+                    </th>
+                    <th>Рейтинг IMDb<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sort-up" viewBox="0 0 16 16">
+                        <path d="M3.5 12.5a.5.5 0 0 1-1 0V3.707L1.354 4.854a.5.5 0 1 1-.708-.708l2-1.999.007-.007a.498.498 0 0 1 .7.006l2 2a.5.5 0 1 1-.707.708L3.5 3.707V12.5zm3.5-9a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zM7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1h-3zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1h-1z"/>
+                    </svg>
+                    </th>
                     <th>Оригинальное название</th>
                     <th>Год выпуска</th>
                     <th>Возрастное ограничение</th>
                     <th>Жанр</th>
                     <th>Страна производства</th>
-                    <th>Рейтинг IMDb</th>
                     <th>Рейтинг film.ru</th>
                     <th>Оценка зрителей</th>
                 </tr>
@@ -30,42 +50,6 @@
             </tbody>
         </table>
     </div>
-
-    <script>
-        function updateTable(movies) {
-            const tableBody = $('#movies-table');
-            tableBody.empty(); // Очистить таблицу перед добавлением новых данных
-            movies.forEach(movie => {
-                const row = `
-                    <tr>
-                        <td>${movie.title}</td>
-                        <td><a href="${movie.url}" target="_blank">${movie.url}</a></td>
-                        <td>${movie.original_name}</td>
-                        <td>${movie.release}</td>
-                        <td>${movie.age_limit}</td>
-                        <td>${movie.genre}</td>
-                        <td>${movie.country}</td>
-                        <td>${movie.rating_IMDb}</td>
-                        <td>${movie.rating_film_ru}</td>
-                        <td>${movie.rating_spectators}</td>
-                    </tr>`;
-                tableBody.append(row);
-            });
-        }
-
-        // Загрузка всех фильмов при нажатии на кнопку
-        $('#load-movies').on('click', function() {
-            $.ajax({
-                url: "/movies",
-                method: "GET",
-                success: function(movies) {
-                    updateTable(movies);
-                },
-                error: function(err) {
-                    console.error("Ошибка при загрузке фильмов:", err);
-                }
-            });
-        });
-    </script>
+    <script src="static/function.js"></script>
 </body>
 </html>
